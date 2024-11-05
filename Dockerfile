@@ -1,19 +1,18 @@
-# Example Dockerfile
+# Dockerfile
 FROM node:alpine
 
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json first
+# Copy package.json and install dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
 
-# Copy only the necessary files for the application
-COPY src ./src
-COPY public ./public
+# Copy the rest of the application code
+COPY . .
 
-# Expose port and start the application
-EXPOSE 8080
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Command to run the application
 CMD ["npm", "start"]
