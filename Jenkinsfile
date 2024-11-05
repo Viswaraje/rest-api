@@ -3,7 +3,6 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Clone the specified branch from GitHub
                 git branch: 'main', url: 'https://github.com/Viswaraje/rest-api.git'
             }
         }
@@ -11,16 +10,16 @@ pipeline {
             steps {
                 script {
                     // Build the Docker image
-                    def image = docker.build("viswaraje/rest-api:latest")
+                    docker.build("viswaraje/rest-api:latest")
                 }
             }
         }
         stage('Push Docker Image') {
             steps {
                 script {
-                    // Push the Docker image to Docker Hub
+                    // Log in to Docker registry and push the image
                     docker.withRegistry('https://registry.hub.docker.com', 'docker-viswaraje') {
-                        image.push()
+                        docker.image("viswaraje/rest-api:latest").push()
                     }
                 }
             }
@@ -28,18 +27,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Run Docker container in detached mode
-                    bat 'docker run -d -p 3001:3000 viswaraje/rest-api:latest'
+                    // Remove existing container if it exists
+                    bat 'docker rm -f nodejs-api || exit 0'
+                    // Run Docker container
+                    bat 'docker run -d --name nodejs-api -p 3001:3000 viswaraje/rest-api:latest'
                 }
-            }
-        }
-    }
-    post {
-        // Cleanup actions
-        always {
-            script {
-                // Optionally, remove the local Docker image to save space
-                sh 'docker rmi viswaraje/rest-api:latest || true'
             }
         }
     }
